@@ -11,11 +11,15 @@ use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\MarkdownEditor;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -42,29 +46,54 @@ class ProductResource extends Resource
                         Forms\Components\TextInput::make('slug')
                             ->required()
                             ->disabled()
+                            ->dehydrated()
                             ->unique(Product::class, 'slug', ignoreRecord: true)
                             ->maxLength(255),
                     ])->columns(2),
-                ])->columnSpan(3),
-                Section::make('General')->schema([
-                    MarkdownEditor::make('description')
-                        ->columnSpanFull()
-                        ->fileAttachmentsDirectory('products'),
-
-
-                    Section::make('Product images')->schema([
-                        FileUpload::make('images')
-                            ->multiple()
-                            ->directory('products')
-                            ->maxFiles(5)
-                            ->reorderable(),
-                    ])
-                ])->columnSpan(2),
-                Section::make('Price')->schema([
-                    TextInput::make('price')
-                        ->numeric()
+                    Section::make('Content')->schema([
+                        MarkdownEditor::make('description')
+                            ->columnSpanFull()
+                            ->fileAttachmentsDirectory('products'),
+                        Section::make('Product images')->schema([
+                            FileUpload::make('images')
+                                ->multiple()
+                                ->directory('products')
+                                ->maxFiles(5)
+                                ->reorderable(),
+                        ])
+                    ]),
+                ])->columnSpan(1),
+                Group::make()->schema([
+                    Section::make('Price')->schema([
+                        TextInput::make('price')
+                            ->numeric()
+                            ->required()
+                            ->prefix("So'm")
+                    ]),
+                    Section::make('Assosiations')->schema([
+                       Select::make('category_id')
+                       ->required()
+                       ->preload()
+                       ->searchable()
+                       ->relationship('category', 'name'),
+                       Select::make('brand_id')
+                       ->required()
+                       ->preload()
+                       ->searchable()
+                       ->relationship('brand', 'name')
+                    ]),
+                    Section::make('Status')->schema([
+                        Toggle::make('in_stock')
                         ->required()
-                        ->prefix("So'm")
+                        ->default(true),
+                        Toggle::make('is_active')
+                        ->required()
+                        ->default(true),
+                        Toggle::make('is_featured')
+                        ->required(),
+                        Toggle::make('on_sale')
+                        ->required(),
+                    ])
                 ])->columnSpan(1)
             ]);
     }
@@ -73,15 +102,11 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('category_id')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('brand_id')
-                    ->numeric()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('slug')
+                Tables\Columns\TextColumn::make('category.name')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('brand.name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('price')
                     ->money()
@@ -104,11 +129,17 @@ class ProductResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('category')
+                ->relationship('category','name'),
+                SelectFilter::make('brand')
+                ->relationship('brand','name'),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
