@@ -10,6 +10,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\MarkdownEditor;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -51,7 +52,7 @@ class ProductResource extends Resource
                             ->maxLength(255),
                     ])->columns(2),
                     Section::make('Content')->schema([
-                        MarkdownEditor::make('description')
+                        RichEditor::make('description')
                             ->columnSpanFull()
                             ->fileAttachmentsDirectory('products'),
                         Section::make('Product images')->schema([
@@ -71,28 +72,28 @@ class ProductResource extends Resource
                             ->prefix("So'm")
                     ]),
                     Section::make('Assosiations')->schema([
-                       Select::make('category_id')
-                       ->required()
-                       ->preload()
-                       ->searchable()
-                       ->relationship('category', 'name'),
-                       Select::make('brand_id')
-                       ->required()
-                       ->preload()
-                       ->searchable()
-                       ->relationship('brand', 'name')
+                        Select::make('category_id')
+                            ->required()
+                            ->preload()
+                            ->searchable()
+                            ->relationship('category', 'name'),
+                        Select::make('brand_id')
+                            ->required()
+                            ->preload()
+                            ->searchable()
+                            ->relationship('brand', 'name')
                     ]),
                     Section::make('Status')->schema([
                         Toggle::make('in_stock')
-                        ->required()
-                        ->default(true),
+                            ->required()
+                            ->default(true),
                         Toggle::make('is_active')
-                        ->required()
-                        ->default(true),
+                            ->required()
+                            ->default(true),
                         Toggle::make('is_featured')
-                        ->required(),
+                            ->required(),
                         Toggle::make('on_sale')
-                        ->required(),
+                            ->required(),
                     ])
                 ])->columnSpan(1)
             ]);
@@ -130,9 +131,9 @@ class ProductResource extends Resource
             ])
             ->filters([
                 SelectFilter::make('category')
-                ->relationship('category','name'),
+                    ->relationship('category', 'name'),
                 SelectFilter::make('brand')
-                ->relationship('brand','name'),
+                    ->relationship('brand', 'name'),
             ])
             ->actions([
                 ActionGroup::make([
