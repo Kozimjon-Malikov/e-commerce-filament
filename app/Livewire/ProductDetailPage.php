@@ -2,10 +2,10 @@
 
 namespace App\Livewire;
 
-use App\Helpers\CartMenagment;
-use App\Livewire\Partials\Navbar;
 use App\Models\Product;
 use Livewire\Component;
+use App\Helpers\CartMenagment;
+use App\Livewire\Partials\Navbar;
 
 class ProductDetailPage extends Component
 {
@@ -25,10 +25,11 @@ class ProductDetailPage extends Component
             $this->quantity--;
         }
     }
+
     // add to Cart 
     public function addToCart($product_id)
     {
-        $total_count = CartMenagment::addItemToCart($product_id);
+        $total_count = CartMenagment::addItemToCartWithQty($product_id,$this->quantity);
         $this->dispatch('update-cart-count', total_count: $total_count)->to(Navbar::class);
     }
     public function render()
